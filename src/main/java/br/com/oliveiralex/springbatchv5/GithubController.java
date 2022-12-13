@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -20,4 +21,8 @@ public class GithubController {
 		return githubClient.findUserByName(name);
 	}
 
+	@GetMapping("/repos/{owner}/{repo}/star")
+	public Flux<UserLoginResponse> getUsersByStarredRepo(@PathVariable String owner, @PathVariable String repo) {
+		return githubClient.ListUserByStarredRepo(owner, repo);
+	}
 }

@@ -1,5 +1,6 @@
 package br.com.oliveiralex.springbatchv5;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,14 +27,16 @@ public class BatchConfig {
 	@Autowired
 	private GithubClient githubClient;
 	
-	List<String> listGithub = Arrays.asList(
-			"oliveiralex", "acenelio", "devsuperior", "Paulocesar90", "marcotuliosr",
-			"douglasfabiano1", "luizdaviDL", "lleandrroo", "easbarba", "edulongodevgeo",
-			"Retr0981", "yurijivago", "cleomarcio2019", "luisinho", "tonistorres",
-			"marciorbarcellos", "CassianoCardoso", "eliseubrito", "AdailSilva", "yasssuz",
-			"Pablo-Henrique", "raldineyr", "vitorvd", "fSantosLima", "jorgecrodrigues",
-			"lucianodiisouza", "andrezasecon", "MarceloMachadoxD", "Henrique-Moreira",
-			"johnymbr");
+	// List<String> listGithub = Arrays.asList(
+	// 		"oliveiralex", "acenelio", "devsuperior", "Paulocesar90", "marcotuliosr",
+	// 		"douglasfabiano1", "luizdaviDL", "lleandrroo", "easbarba", "edulongodevgeo",
+	// 		"Retr0981", "yurijivago", "cleomarcio2019", "luisinho", "tonistorres",
+	// 		"marciorbarcellos", "CassianoCardoso", "eliseubrito", "AdailSilva", "yasssuz",
+	// 		"Pablo-Henrique", "raldineyr", "vitorvd", "fSantosLima", "jorgecrodrigues",
+	// 		"lucianodiisouza", "andrezasecon", "MarceloMachadoxD", "Henrique-Moreira",
+	// 		"johnymbr");
+
+	Iterable<UserLoginResponse> listGithub = new ArrayList<>();
 	
 	@Bean
 	public Job job(JobRepository jobRepository, Step step) {
@@ -43,12 +46,17 @@ public class BatchConfig {
 	@Bean
 	public Step step(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
 		return new StepBuilder("step", jobRepository)
-				.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
+				.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {			
+					
 					System.out.println("Olá, mundo");
 					int i = 1;
+
+					listGithub = githubClient
+										.ListUserByStarredRepo("devsuperior", "spring-boot-oauth")
+										.toIterable();
 					
-					for (String userProfile: listGithub) {
-						Mono<UserResponse> data = githubClient.findUserByName(userProfile);
+					for (UserLoginResponse userLogin: listGithub) {
+						Mono<UserResponse> data = githubClient.findUserByName(userLogin.getLogin());
 						UserResponse user = data.toFuture().get();
 						log.info("[{}]: id: {} , login: {}, name: {}, location: {}", i, user.getId(), user.getLogin(), user.getName(), user.getLocation());
 						i++;
